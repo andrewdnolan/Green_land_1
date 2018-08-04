@@ -10,6 +10,7 @@ accuratley display the distribution of water on the glaciers.
 Since this script is most i/o bound (reading and writing rasters) I have not
 attempted to parallelize any part of the processing step. Instead, I followed the
 methods from - https://www.gis.usu.edu/~chrisg/python/2009/lectures/ospy_slides4.pdf
+& http://geoexamples.blogspot.com/2013/06/gdal-performance-raster-classification.html
 The raster is read in and written by a user specified block size (default 256 x 256)
 instead of the deafualt Landsat blocksize of 9356 x 1. This is suppoded to be the
 far more efficent way to read, process and write the data the reading the entire
