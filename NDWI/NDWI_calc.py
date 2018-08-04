@@ -19,7 +19,15 @@ raster in one sitting, processing, and writing in one sitting..
 Another option may be to parrallelize the decompression of the .tar.gz Landsat
 scenes. This will present a significant slow down if it is only computed by one
 core. This will especially be the case when the script is executed on an direcotry
-containg 50-100 Landsat scenes to be processed.  
+containg 50-100 Landsat scenes to be processed.
+
+TODO:
+	- Attemot to .tar.gz files in parallel, using pigz?
+		- need to find out if really better to do in parallel, will depend on how
+		  much of the process is cpu bound and how much is i/o bound.
+	- Do I need to do Top of Atmosphere Reflecatance (TOA) corrections for the
+	  images since they are level-1 or should I just download higher level scenes
+	  (ie. Level-2 or ready for processing)
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
 import os
@@ -209,28 +217,24 @@ def main():
         # especially when you will have 100+ scenes per direcotry of each glacier.
         for line, fn in enumerate(files):
             #compile a list of all of the scene directories and their file paths to itterate through
-            if 'L' in fn:
+            if fn.split('_')[0][2:] == '08':
                 if fn.endswith('.tar.gz') == True and os.path.isdir(root + '/'+ fn.split('.')[0]) == False:
-                    os.mkdir(root + '/' + fn.split('.')[0])
-                    unzip_cmd = 'tar -xvzf ' + root+ '/' + fn + ' -C ' + root + '/' + fn.split('.')[0]
+					unzipped_dir = root + '/' + fn.split('.')[0]
+                    os.mkdir(unzipped_dir)
+                    unzip_cmd = 'tar -xvzf ' + root+ '/' + fn + ' -C ' + unzipped_dir
                     subprocess.call(unzip_cmd,shell=True)
 
-                    #now rewalk direcotry to get the new files if the direcotry was just unzipped
-                    for root,dirs,files in os.walk(src_dir):
-                        for line, dn in enumerate(dirs):
-                            #Might need to add more conditionals here based on what the naming convention is for all of Landsat 8
-                            if dn.startswith('LC') == True:
-                                bands = os.listdir(root + '/' +dn)
-                                for i,band in enumerate(bands):
-                                    if band.endswith('B3.TIF') == True:
-                                        green_fn = cwd + '/' + root + '/' + dn + '/' + bands[i]
-                                    elif band.endswith('B5.TIF') == True:
-                                        nir_fn = cwd + '/' + root + '/' + dn + '/' + bands[i]
-                                    elif band.endswith('BQA.TIF') == True:
-                                        qa_fn = cwd + '/' + root + '/' + dn + '/' + bands[i]
+					#more effiecent way to unzipp and the imdeately do the necessary calculations. Otherwise would have created bottleneck
+					# as the 50-100 direcotries unzipp. 
+					for i,band in enumerate(os.listdir(unzipped_dir)):
+						if band.endswith('B3.TIF') == True:
+							green_fn = cwd + '/' + root + '/' + dn + '/' + bands[i]
+                        elif band.endswith('B5.TIF') == True:
+                            nir_fn = cwd + '/' + root + '/' + dn + '/' + bands[i]
+                        elif band.endswith('BQA.TIF') == True:
+                            qa_fn = cwd + '/' + root + '/' + dn + '/' + bands[i]
 
-
-                                whole_array = read_n_write(green_fn, nir_fn, qa_fn, t_srs=t_srs, x_block_size = x_block_size, y_block_size = x_block_size)
+                        whole_array = read_n_write(green_fn, nir_fn, qa_fn, t_srs=t_srs, x_block_size = x_block_size, y_block_size = x_block_size)
 
 
                 else:
