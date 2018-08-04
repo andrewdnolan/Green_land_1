@@ -225,7 +225,7 @@ def main():
                     subprocess.call(unzip_cmd,shell=True)
 
 					#more effiecent way to unzipp and the imdeately do the necessary calculations. Otherwise would have created bottleneck
-					# as the 50-100 direcotries unzipp. 
+					# as the 50-100 direcotries unzipp.
 					for i,band in enumerate(os.listdir(unzipped_dir)):
 						if band.endswith('B3.TIF') == True:
 							green_fn = cwd + '/' + root + '/' + dn + '/' + bands[i]
