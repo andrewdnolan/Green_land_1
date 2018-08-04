@@ -2,5 +2,6 @@
 
 ## Normailzed Difference Water Index Calculations (NDWI) 
 
-$ NDWI = (Green - NIR) / (Green + NIR) $
+\[ NDWI = (Green - NIR) / (Green + NIR)\]
+
 
